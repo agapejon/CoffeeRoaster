@@ -21,6 +21,12 @@ Created by Jonathan Dowell
 #define MAX2CS   6
 #define MAX2CLK  7
 
+// define relay modules
+#define RELAY1 A5
+#define RELAY2 A4
+#define RELAY3 A3
+#define RELAY4 A2
+
 // Initialize the Thermocouples
 Adafruit_MAX31855 thermocouple1(MAX1CLK, MAX1CS, MAX1DO);
 Adafruit_MAX31855 thermocouple2(MAX2CLK, MAX2CS, MAX2DO);
@@ -28,37 +34,15 @@ Adafruit_MAX31855 thermocouple2(MAX2CLK, MAX2CS, MAX2DO);
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(9);
 
+
 //Global Variables
 StopWatch sw_millis;    // MILLIS (default)
 StopWatch sw_micros(StopWatch::MICROS);
 StopWatch sw_secs(StopWatch::SECONDS);
 StopWatch sw_mins(StopWatch::SECONDS);
 
-void setup() {
-  Serial.begin(9600);
-
-// set up the LCD's number of columns and rows: 
-  lcd.begin(16, 2);
-  lcd.clear();
-  lcd.print("Loving Coffee");
-  lcd.setCursor (0, 1);
-  lcd.print("Loving People");
-  ;
-// wait for MAX chip to stabilize
-  delay(2000);
-  lcd.clear();
-  
-//prepare timer variables
-  sw_secs.start();
-  sw_mins.start();
-}
-
-void loop() {
-  // basic readout test, just print the current temp
-  // Serial.print("Int. Temp = ");
-  // Serial.println(thermocouple.readInternal());
- 
-   //Timer Display
+void UpdateTimer(){
+     //Timer Display
    lcd.setCursor (8, 0);
    lcd.print("TM ");
 
@@ -82,7 +66,6 @@ void loop() {
       lcd.setCursor (11, 0);
       lcd.print(round(sw_mins.elapsed()/60));   
       }
-  
    
    //Timer seconds display
    if (sw_secs.elapsed()<10)
@@ -106,8 +89,10 @@ void loop() {
       lcd.setCursor (15, 0);
       lcd.print(round(sw_secs.elapsed()));
    }
-   
-   //Bean Temperature measurement and display
+  }
+
+void MeasureTemps(){
+     //Bean Temperature measurement and display
    double bt = thermocouple1.readFarenheit(); 
    lcd.setCursor(0, 1);
    if (isnan(bt)) 
@@ -140,7 +125,38 @@ void loop() {
      Serial.print("Air Temp = *");
      Serial.println(at);
    }
-   
+  }
+
+void setup() {
+  Serial.begin(9600);
+
+//Initilize relays
+  pinMode(RELAY1, OUTPUT);
+  pinMode(RELAY2, OUTPUT);
+  pinMode(RELAY3, OUTPUT);
+  pinMode(RELAY4, OUTPUT);
+
+// set up the LCD's number of columns and rows: 
+  lcd.begin(16, 2);
+  lcd.clear();
+  lcd.print("Loving Coffee");
+  lcd.setCursor (0, 1);
+  lcd.print("Loving People");
+  ;
+// wait for MAX chip to stabilize
+  delay(2000);
+  lcd.clear();
+  
+//prepare timer variables
+  sw_secs.start();
+  sw_mins.start();
+}
+
+void loop() {
+  
+  UpdateTimer();   
+  MeasureTemps();
+
    //Fan Speed measurement and display
    lcd.setCursor(8, 1);
    lcd.print("FS  100%");
